@@ -1,4 +1,6 @@
 ﻿using ShopApi23.Data;
+using ShopApi23.DTO.Request;
+using ShopApi23.DTO.Response;
 using ShopApi23.Repositories;
 using ShopApi23.Service.Abstractions;
 
@@ -12,14 +14,14 @@ namespace ShopApi23.Service
             _repository = repository;
         }
 
-        public async Task<int> CreateProduct(string title, string description, double price, int categoryId)
+        public async Task<int> CreateProduct(ProductRequestDTO product)
         {
             var item = await _repository.CreateOrUpdate(new Product()
             {
-                Title = title,
-                Description = description,
-                Price = price,
-                CategoryId = categoryId
+                Title = product.Title,
+                Description = product.Description,
+                Price = product.Price,
+                CategoryId = product.CategoryId
             });
             return item.Id;
         }
@@ -29,27 +31,63 @@ namespace ShopApi23.Service
             return await _repository.RemoveById(id);
         }
 
-        public List<Product> GetAll()
+        public List<ProductResponseDTO> GetAll()
         {
-            return _repository.GetAll();
+            return _repository.GetAll()
+                .Select(item => new ProductResponseDTO()
+                {
+                    Id = item.Id,
+                    Title = item.Title,
+                    Description = item.Description,
+                    Price = item.Price,
+                    CategoryId = item.CategoryId,
+                    CategoryTitle = item.Category.Title,
+                    CreatedAt = item.CreatedAt,
+                    ModifiedAt = item.ModifiedAt
+                })
+                .ToList();
         }
 
-        public Product GetProduct(int id)
+        public ProductResponseDTO GetProduct(int id)
         {
-            return _repository.GetById(id);
+            var item = _repository.GetById(id);
+            return new ProductResponseDTO()
+            {
+                Id = item.Id,
+                Title = item.Title,
+                Description = item.Description,
+                Price = item.Price,
+                CategoryId = item.CategoryId,
+                CategoryTitle = item.Category.Title,
+                CreatedAt = item.CreatedAt,
+                ModifiedAt = item.ModifiedAt
+            };
         }
 
-        public async Task<Product> UpdateProduct(int id, string title, string description, double price, int categoryId)
+        public async Task<ProductResponseDTO> UpdateProduct(int id, ProductRequestDTO product)
         {
             var item = _repository.GetById(id);
 
             if (item != null)
             {
-                item.Title = title;
-                item.Description = description;
-                item.Price = price;
-                item.CategoryId = categoryId;
-                return await _repository.CreateOrUpdate(item);
+                item.Id = id;
+                item.Title = product.Title;
+                item.Description = product.Description;
+                item.Price = product.Price;
+                item.CategoryId = product.CategoryId;
+                
+                var updatedItem = await _repository.CreateOrUpdate(item);
+                return new ProductResponseDTO()
+                {
+                    Id = updatedItem.Id,
+                    Title = updatedItem.Title,
+                    Description = updatedItem.Description,
+                    Price = updatedItem.Price,
+                    CategoryId = updatedItem.CategoryId,
+                    CategoryTitle = updatedItem.Category.Title,
+                    CreatedAt = updatedItem.CreatedAt,
+                    ModifiedAt = updatedItem.ModifiedAt
+                };
             }
             else
             {

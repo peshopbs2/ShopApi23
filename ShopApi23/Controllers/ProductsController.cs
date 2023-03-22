@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using ShopApi23.Data;
+using ShopApi23.DTO.Request;
+using ShopApi23.DTO.Response;
 using ShopApi23.Service.Abstractions;
 
 namespace ShopApi23.Controllers
@@ -24,7 +26,7 @@ namespace ShopApi23.Controllers
 
         // GET: api/Products
         [HttpGet]
-        public ActionResult<IEnumerable<Product>> GetProducts()
+        public ActionResult<IEnumerable<ProductResponseDTO>> GetProducts()
         {
             
             return _productService.GetAll();
@@ -32,7 +34,7 @@ namespace ShopApi23.Controllers
 
         // GET: api/Products/5
         [HttpGet("{id}")]
-        public ActionResult<Product> GetProduct(int id)
+        public ActionResult<ProductResponseDTO> GetProduct(int id)
         {
             var product = _productService.GetProduct(id);
 
@@ -47,14 +49,9 @@ namespace ShopApi23.Controllers
         // PUT: api/Products/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutProduct(int id, Product product)
+        public async Task<IActionResult> PutProduct(int id, ProductRequestDTO product)
         {
-            if (id != product.Id)
-            {
-                return BadRequest();
-            }
-
-            await _productService.UpdateProduct(id, product.Title, product.Description, product.Price, product.CategoryId);
+            await _productService.UpdateProduct(id, product);
 
             return NoContent();
         }
@@ -62,9 +59,9 @@ namespace ShopApi23.Controllers
         // POST: api/Products
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Product>> PostProduct(Product product)
+        public async Task<ActionResult<ProductResponseDTO>> PostProduct(ProductRequestDTO product)
         {
-            int productId = await _productService.CreateProduct(product.Title, product.Description, product.Price, product.CategoryId);
+            int productId = await _productService.CreateProduct(product);
 
             return CreatedAtAction("GetProduct", new { id = productId }, product);
         }

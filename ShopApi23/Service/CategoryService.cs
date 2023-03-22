@@ -1,4 +1,6 @@
 ﻿using ShopApi23.Data;
+using ShopApi23.DTO.Request;
+using ShopApi23.DTO.Response;
 using ShopApi23.Repositories;
 using ShopApi23.Service.Abstractions;
 
@@ -12,11 +14,11 @@ namespace ShopApi23.Service
             _repository = repository;
         }
 
-        public async Task<int> CreateCategory(string title)
+        public async Task<int> CreateCategory(CategoryRequestDTO category)
         {
             var item = await _repository.CreateOrUpdate(new Category()
             {
-                Title = title
+                Title = category.Title
             });
             return item.Id;
         }
@@ -26,24 +28,47 @@ namespace ShopApi23.Service
             return await _repository.RemoveById(id);
         }
 
-        public List<Category> GetAll()
+        public List<CategoryResponseDTO> GetAll()
         {
-            return _repository.GetAll();
+            return _repository.GetAll()
+                .Select(item => new CategoryResponseDTO()
+                {
+                    Id = item.Id,
+                    Title = item.Title,
+                    CreatedAt = item.CreatedAt,
+                    ModifiedAt = item.ModifiedAt
+                })
+                .ToList();
         }
 
-        public Category GetCategory(int id)
+        public CategoryResponseDTO GetCategory(int id)
         {
-            return _repository.GetById(id);
+            var item = _repository.GetById(id);
+            return new CategoryResponseDTO()
+            {
+                Id = item.Id,
+                Title = item.Title,
+                CreatedAt = item.CreatedAt,
+                ModifiedAt = item.ModifiedAt
+            };
         }
 
-        public async Task<Category> UpdateCategory(int id, string title)
+        public async Task<CategoryResponseDTO> UpdateCategory(int id, CategoryRequestDTO category)
         {
             var item = _repository.GetById(id);
 
             if (item != null)
             {
-                item.Title = title;
-                return await _repository.CreateOrUpdate(item);
+                item.Id = id;
+                item.Title = category.Title;
+                var editedItem = await _repository.CreateOrUpdate(item);
+                return new CategoryResponseDTO()
+                {
+                    Id = editedItem.Id,
+                    Title = editedItem.Title,
+                    CreatedAt = editedItem.CreatedAt,
+                    ModifiedAt = editedItem.ModifiedAt
+                };
             }
             else
             {

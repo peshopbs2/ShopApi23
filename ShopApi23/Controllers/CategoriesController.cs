@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ShopApi23.Data;
+using ShopApi23.DTO.Request;
+using ShopApi23.DTO.Response;
 using ShopApi23.Service;
 using ShopApi23.Service.Abstractions;
 
@@ -23,14 +25,14 @@ namespace ShopApi23.Controllers
 
         // GET: api/Categories
         [HttpGet]
-        public ActionResult<IEnumerable<Category>> GetCategories()
+        public ActionResult<IEnumerable<CategoryResponseDTO>> GetCategories()
         {
             return _categoryService.GetAll();
         }
 
         // GET: api/Categories/5
         [HttpGet("{id}")]
-        public ActionResult<Category> GetCategory(int id)
+        public ActionResult<CategoryResponseDTO> GetCategory(int id)
         {
             var category = _categoryService.GetCategory(id);
 
@@ -43,27 +45,20 @@ namespace ShopApi23.Controllers
         }
 
         // PUT: api/Categories/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCategory(int id, Category category) //TODO: CategoryRequestDto
+        public async Task<IActionResult> PutCategory(int id, CategoryRequestDTO category) //TODO: CategoryRequestDto
         {
-            if (id != category.Id)
-            {
-                return BadRequest();
-            }
-
-            await _categoryService.UpdateCategory(id, category.Title);
+            await _categoryService.UpdateCategory(id, category);
             
-
             return NoContent();
         }
 
         // POST: api/Categories
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Category>> PostCategory(Category category)
+        public async Task<ActionResult<CategoryResponseDTO>> PostCategory(CategoryRequestDTO category)
         {
-            int categoryId = await _categoryService.CreateCategory(category.Title);
+            int categoryId = await _categoryService.CreateCategory(category);
 
             return CreatedAtAction("GetCategory", new { id = categoryId }, category);
         }
